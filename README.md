@@ -74,7 +74,7 @@
 
 + 进入汽车租赁系统，此时尚未连接账户。
 
-![image-20231111173801372](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111173801372.png)
+  ![image-20231111173801372](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111173801372.png)
 
 + 使用小狐狸连接到钱包
 
