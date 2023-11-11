@@ -45,6 +45,7 @@
 	function getBorrower(uint256 carId)
 	```
 传入汽车的 ID ，返回 `cars[ID]` 的 `owner` 和 `borrower` 属性。
+
 3. **选择并借用某辆还没有被借用的汽车一定时间。**
 	实现 `borrowCar` 函数：
 	```solidity
@@ -59,6 +60,7 @@
     	emit CarBorrowed(carTokenId, msg.sender, block.timestamp, duration); // 向区块链发送交易事件
     }
 	```
+ 
 4. **使用自己发行的积分（ERC20）完成付费租赁汽车的流程。**
 实现一个基于 ERC20 的合约 `TapWaterCoin` ，发行自来水币（某种拧一下水龙头就会到处都是的廉价货币），并通过上述 `BorrowYourCar` 合约中的 `borrowCar` 函数实现交易中的费用支出。
 
