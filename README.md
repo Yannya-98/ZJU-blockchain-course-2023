@@ -31,7 +31,7 @@
 
 1. **查看自己拥有的汽车列表。查看当前还没有被借用的汽车列表。**
 	
- 维护了两个映射：
+ 	维护了两个映射：
 	
 	```solidity
 	mapping(uint256 => Car) public cars;
@@ -41,16 +41,16 @@
 	+ 查看当前还没有被借用的汽车列表时，遍历 `cars` 映射集，返回一个映射 `availableCars` ，其包含 `cars` 中所有 `borrower` 属性为 `address(0)` ，即无人借用的汽车。
 2. **查询一辆汽车的主人，以及该汽车当前的借用者（如果有）。**
 
-维护上述 `cars` 映射，然后实现以下函数：
+	维护上述 `cars` 映射，然后实现以下函数：
 	```solidity
 	function getOwner(uint256 carId)
 	function getBorrower(uint256 carId)
 	```
-传入汽车的 ID ，返回 `cars[ID]` 的 `owner` 和 `borrower` 属性。
+	传入汽车的 ID ，返回 `cars[ID]` 的 `owner` 和 `borrower` 属性。
 
 3. **选择并借用某辆还没有被借用的汽车一定时间。**
 	
- 实现 `borrowCar` 函数：
+ 	实现 `borrowCar` 函数：
 	```solidity
 	function borrowCar(uint256 carTokenId, uint256 duration) external { // 传入车辆ID，借用时长
 		require(ownerOf(carTokenId) != msg.sender, "You cannot borrow your own car"); // 自己的车
@@ -66,7 +66,7 @@
  
 4. **使用自己发行的积分（ERC20）完成付费租赁汽车的流程。**
 
-实现一个基于 ERC20 的合约 `TapWaterCoin` ，发行自来水币（某种拧一下水龙头就会到处都是的廉价货币），并通过上述 `BorrowYourCar` 合约中的 `borrowCar` 函数实现交易中的费用支出。
+	实现一个基于 ERC20 的合约 `TapWaterCoin` ，发行自来水币（某种拧一下水龙头就会到处都是的廉价货币），并通过上述 `BorrowYourCar` 合约中的 `borrowCar` 函数实现交易中的费用支出。
 
 ## 项目运行截图
 
