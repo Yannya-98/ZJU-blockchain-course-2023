@@ -1,31 +1,8 @@
-# ZJU-blockchain-course-2023
-
-⬆ 可以️修改成你自己的项目名。
-
-> 第二次作业要求（以下内容提交时可以删除）：
-> 
-> 简易汽车借用系统，参与方包括：汽车拥有者，有借用汽车需求的用户
->
-> 背景：ERC-4907 基于 ERC-721 做了简单的优化和补充，允许用户对NFT进行租借。
-> - 创建一个合约，在合约中发行NFT集合，每个NFT代表一辆汽车。给部分用户测试领取部分汽车NFT，用于后面的测试。
-> - 在网站中，默认每个用户的汽车都可以被借用。每个用户可以： 
->    1. 查看自己拥有的汽车列表。查看当前还没有被借用的汽车列表。
->    2. 查询一辆汽车的主人，以及该汽车当前的借用者（如果有）。
->    3. 选择并借用某辆还没有被借用的汽车一定时间。
->    4. 上述过程中借用不需要进行付费。
-> 
-> - （Bonus）使用自己发行的积分（ERC20）完成付费租赁汽车的流程
-> - 请大家专注于功能实现，网站UI美观程度不纳入评分标准，但要让用户能够舒适操作。简便起见，可以在网上找图片代表不同汽车，不需要将图片在链上进行存储。
-
-**以下内容为作业仓库的README.md中需要描述的内容。请根据自己的需要进行修改并提交。**
-
-作业提交方式为：**提交视频文件**和**仓库的链接**到指定邮箱。
+# 汽车租赁系统
 
 ## 如何运行
 
-补充如何完整运行你的应用。
-
-1. 在本地启动ganache应用。
+1. 在本地启动 ganache 应用并创建测试链。
 
 2. 在 `./contracts` 中安装需要的依赖，运行如下的命令：
     ```bash
@@ -35,8 +12,12 @@
     ```bash
     npx hardhat compile
     ```
-4. ...
-5. ...
+4. 在 `./contracts` 中部署合约到 ganache 测试链上，在 `./contracts/hardhat.config.ts` 文件中输入测试链上的账户私钥以导入用户，然后运行如下的命令：
+	```bash
+	npx hardhat run ./scripts/deploy.ts --network ganache
+	```
+	将输出的合约部署地址填写到 `./frontend/src/utils/contract-addresses.json` 中
+5. 复制 `./contracts/artifacts/contracts/BorrowYourCar.sol/BorrowYourCar.json` 和 `./contracts/artifacts/contracts/QiushiToken.sol/QiushiToken.json` 到 `./frontend/src/utils/abis` 中
 6. 在 `./frontend` 中安装需要的依赖，运行如下的命令：
     ```bash
     npm install
@@ -48,20 +29,87 @@
 
 ## 功能实现分析
 
-简单描述：项目完成了要求的哪些功能？每个功能具体是如何实现的？
-
-建议分点列出。
+1. **查看自己拥有的汽车列表。查看当前还没有被借用的汽车列表。**
+	维护了两个映射：
+	
+	```solidity
+	mapping(uint256 => Car) public cars;
+	mapping(address => uint256[]) private ownedCars;
+	```
+	+ 查看拥有的汽车列表时，通过传入当前账户的地址返回拥有的车辆序列：`ownedCars[msg.sender]`
+	+ 查看当前还没有被借用的汽车列表时，遍历 `cars` 映射集，返回一个映射 `availableCars` ，其包含 `cars` 中所有 `borrower` 属性为 `address(0)` ，即无人借用的汽车。
+2. **查询一辆汽车的主人，以及该汽车当前的借用者（如果有）。**
+维护上述 `cars` 映射，然后实现以下函数：
+	```solidity
+	function getOwner(uint256 carId)
+	function getBorrower(uint256 carId)
+	```
+传入汽车的 ID ，返回 `cars[ID]` 的 `owner` 和 `borrower` 属性。
+3. **选择并借用某辆还没有被借用的汽车一定时间。**
+	实现 `borrowCar` 函数：
+	```solidity
+	function borrowCar(uint256 carTokenId, uint256 duration) external { // 传入车辆ID，借用时长
+		require(ownerOf(carTokenId) != msg.sender, "You cannot borrow your own car"); // 自己的车
+    	require(cars[carTokenId].borrower == address(0), "Car is already borrowed"); // 已被借用
+    	uint256 rentalFee = duration / 60; // 一分钟1个自来水币
+    	require(tapWaterCoin.balanceOf(msg.sender) >= rentalFee, "Insufficient balance"); // 余额不足
+    	tapWaterCoin.transferFrom( msg.sender,cars[carTokenId].owner, rentalFee); // 交易
+    	cars[carTokenId].borrower = msg.sender; // 写入借用者
+    	cars[carTokenId].borrowUntil = block.timestamp + duration; // 借用到期时间
+    	emit CarBorrowed(carTokenId, msg.sender, block.timestamp, duration); // 向区块链发送交易事件
+    }
+	```
+4. **使用自己发行的积分（ERC20）完成付费租赁汽车的流程。**
+实现一个基于 ERC20 的合约 `TapWaterCoin` ，发行自来水币（某种拧一下水龙头就会到处都是的廉价货币），并通过上述 `BorrowYourCar` 合约中的 `borrowCar` 函数实现交易中的费用支出。
 
 ## 项目运行截图
 
-放一些项目运行截图。
+（若图片不能正常查看请参考 readme.pdf 文件。）
 
-项目运行成功的关键页面和流程截图。主要包括操作流程以及和区块链交互的截图。
++ 进入汽车租赁系统，此时尚未连接账户。
+
+![image-20231111173801372](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111173801372.png)
+
++ 使用小狐狸连接到钱包
+
+  ![image-20231111174812470](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111174812470.png)
+
++ 在当前账户下添加若干车辆用以测试，刷新页面后显示拥有车辆和空闲车辆
+
+  ![image-20231111174937835](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111174937835.png)
+
++ 领取自来水币空投，刷新页面后显示货币数量
+
+  ![image-20231111175014876](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111175014876.png)
+
++ 查询车辆信息
+
+  ![image-20231111175058655](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111175058655.png)
+
++ 更换账户后，借用空闲车辆
+
+  ![image-20231111175222025](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111175222025.png)
+
+  ![image-20231111175325790](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111175325790.png)
+
++ 刷新页面，发现拥有的自来水币减少，空闲车辆状态更新
+
+  ![image-20231111175411815](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111175411815.png)
+
++ 查询已被借用的车辆
+
+  ![image-20231111175435046](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111175435046.png)
+
++ 借用已被借用的车辆
+
+  ![image-20231111175502166](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111175502166.png)
+
++ 租用时间（3min）结束后，更新空闲车辆列表，发现车辆已归还
+
+  ![image-20231111175644491](C:\Users\Yang\AppData\Roaming\Typora\typora-user-images\image-20231111175644491.png)
 
 ## 参考内容
 
 - 课程的参考Demo见：[DEMOs](https://github.com/LBruyne/blockchain-course-demos)。
 
 - ERC-4907 [参考实现](https://eips.ethereum.org/EIPS/eip-4907)
-
-如果有其它参考的内容，也请在这里陈列。

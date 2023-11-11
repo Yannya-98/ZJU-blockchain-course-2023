@@ -6,10 +6,11 @@ const config: HardhatUserConfig = {
   networks: {
     ganache: {
       // rpc url, change it according to your ganache configuration
-      url: 'http://localhost:8545',
+      url: 'http://127.0.0.1:8545',
       // the private key of signers, change it according to your ganache user
       accounts: [
-        '0x172a483415c5e119f1ea336d44646572ac34a088e7bc2884f8e1f83da4cb304a'
+        '0xa0a9f759848dbff6da1892396a4c5b494ab65611fd908d949b95ad7ac1a2d25d',
+        '0xed1b4066cf3accd637722d9c8d63695312ba367715690879b51ad310578f4f6a'
       ]
     },
   },

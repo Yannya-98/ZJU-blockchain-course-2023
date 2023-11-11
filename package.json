@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@metamask/detect-provider": "^2.0.0",
+    "sass": "^1.69.5",
+    "web3": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.9.0"
+  }
+}
